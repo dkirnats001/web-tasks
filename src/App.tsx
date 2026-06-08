@@ -6,6 +6,7 @@ import { Square } from './components/Square'
 import { SquareSum } from './components/SquareSum'
 import { Water } from './components/Water'
 import { Log } from './components/Log'
+import CurrencyInput from './components/CurrencyInput'
 
 function App() {
 
@@ -18,6 +19,7 @@ function App() {
       <SquareSum />
       <Water />
       <Log /> 
+      <CurrencyInput />
     </ol>
   );
 }
