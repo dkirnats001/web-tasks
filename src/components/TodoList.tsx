@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import TodoItem from './TodoItem';
 
 interface Task {
@@ -8,12 +8,13 @@ interface Task {
 }
 
 const TodoList: React.FC = () => {
-  // Состояния (useState из лекции)
   const [tasks, setTasks] = useState<Task[]>([]);
   const [inputValue, setInputValue] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>(''); 
   const [nextId, setNextId] = useState<number>(1);
+  
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Функция добавления дела
   const addTask = () => {
     if (inputValue.trim() === '') {
       alert('Введите текст дела!');
@@ -31,16 +32,25 @@ const TodoList: React.FC = () => {
     setNextId(nextId + 1);
   };
 
-  // Функция переключения статуса (выполнено/не выполнено)
   const toggleTask = (id: number) => {
     setTasks(tasks.map(task => 
       task.id === id ? { ...task, completed: !task.completed } : task
     ));
   };
 
-  // Функция удаления дела
   const deleteTask = (id: number) => {
     setTasks(tasks.filter(task => task.id !== id));
+  };
+
+  const filteredTasks = tasks.filter(task =>
+    task.text.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
   };
 
   return (
@@ -52,7 +62,37 @@ const TodoList: React.FC = () => {
     }}>
       <h2>📝 Мой список дел</h2>
       
-      {/* Поле ввода и кнопка добавления */}
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+        <input
+          ref={searchInputRef}
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="🔍 Поиск по делам..."
+          style={{
+            flex: 1,
+            padding: '10px',
+            borderRadius: '4px',
+            border: '1px solid #ccc',
+            fontSize: '16px'
+          }}
+        />
+        <button
+          onClick={clearSearch}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#9e9e9e',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '16px'
+          }}
+        >
+          ✖ Очистить
+        </button>
+      </div>
+      
       <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
         <input
           type="text"
@@ -84,24 +124,27 @@ const TodoList: React.FC = () => {
         </button>
       </div>
       
-      {/* Условный рендеринг: если дел нет - показываем сообщение */}
       {tasks.length === 0 ? (
         <p style={{ color: '#999', textAlign: 'center' }}>
           Нет дел. Добавьте что-нибудь!
         </p>
       ) : (
-        /* Циклический рендеринг: перебираем массив дел */
-        <ul style={{ listStyle: 'none', padding: 0 }}>
-          {tasks.map((task) => (
-            <TodoItem
-              key={task.id}  
-              todo={task.text}
-              isCompleted={task.completed}
-              onToggle={() => toggleTask(task.id)}
-              onDelete={() => deleteTask(task.id)}
-            />
-          ))}
-        </ul>
+        <>
+          <p style={{ color: '#666', fontSize: '14px', marginBottom: '10px' }}>
+            {filteredTasks.length} из {tasks.length} дел показано
+          </p>
+          <ul style={{ listStyle: 'none', padding: 0 }}>
+            {filteredTasks.map((task) => (
+              <TodoItem
+                key={task.id}
+                todo={task.text}
+                isCompleted={task.completed}
+                onToggle={() => toggleTask(task.id)}
+                onDelete={() => deleteTask(task.id)}
+              />
+            ))}
+          </ul>
+        </>
       )}
     </div>
   );
